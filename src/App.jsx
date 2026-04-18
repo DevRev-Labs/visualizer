@@ -192,7 +192,8 @@ export default function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const configUrl = params.get('config') || '/config.json'
+    const configUrl = params.get('config')
+    if (!configUrl) { setError('no_config'); setLoading(false); return }
     fetch(configUrl)
       .then((r) => { if (!r.ok) throw new Error(`Failed to fetch config: ${r.status}`); return r.json() })
       .then((data) => { setConfig(data); setLoading(false) })
@@ -206,12 +207,37 @@ export default function App() {
   )
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center space-y-2">
-        <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
-        <p className="text-gray-700 font-medium">Failed to load config</p>
-        <p className="text-sm text-gray-400">{error}</p>
-        <p className="text-xs text-gray-400">Pass a URL via <code className="font-mono bg-gray-100 px-1 rounded">?config=https://...</code></p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="w-6 h-6 text-red-400 shrink-0" />
+          <h1 className="text-lg font-semibold text-gray-800">No config loaded</h1>
+        </div>
+        <p className="text-sm text-gray-500">
+          This visualizer is a generic rendering engine. Point it at your own <code className="font-mono bg-gray-100 px-1 rounded text-xs">config.json</code> via the <code className="font-mono bg-gray-100 px-1 rounded text-xs">?config=</code> query param.
+        </p>
+        <div className="bg-gray-900 rounded-xl p-4 text-xs font-mono text-green-400 break-all">
+          https://devrev-labs.github.io/visualizer/?config=https://raw.githubusercontent.com/&#123;org&#125;/&#123;repo&#125;/main/docs/visualizer-config.json
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest">Config format</p>
+          <pre className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-600 overflow-x-auto">{`{
+  "title": "My Architecture",
+  "subtitle": "Optional subtitle",
+  "tabs": [
+    { "id": "t1", "label": "Tab Label", "icon": "box",
+      "type": "cards | pipeline | hierarchy",
+      ... }
+  ]
+}`}</pre>
+        </div>
+        <a
+          href="https://github.com/DevRev-Labs/visualizer"
+          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+          target="_blank" rel="noreferrer"
+        >
+          View documentation on GitHub →
+        </a>
       </div>
     </div>
   )
