@@ -192,12 +192,25 @@ export default function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const configUrl = params.get('config')
-    if (!configUrl) { setError('no_config'); setLoading(false); return }
-    fetch(configUrl)
-      .then((r) => { if (!r.ok) throw new Error(`Failed to fetch config: ${r.status}`); return r.json() })
-      .then((data) => { setConfig(data); setLoading(false) })
-      .catch((e) => { setError(e.message); setLoading(false) })
+    const configParam = params.get('config')
+    if (!configParam) { setError('no_config'); setLoading(false); return }
+
+    try {
+      if (configParam.startsWith('data:')) {
+        const base64 = configParam.split(',')[1]
+        const json = atob(base64)
+        setConfig(JSON.parse(json))
+        setLoading(false)
+      } else {
+        fetch(configParam)
+          .then((r) => { if (!r.ok) throw new Error(`Failed to fetch config: ${r.status}`); return r.json() })
+          .then((data) => { setConfig(data); setLoading(false) })
+          .catch((e) => { setError(e.message); setLoading(false) })
+      }
+    } catch (e) {
+      setError(e.message)
+      setLoading(false)
+    }
   }, [])
 
   if (loading) return (
